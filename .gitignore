@@ -1,0 +1,10 @@
+.env.dev
+.env.test
+.env.prod
+.DS_Store
+.idea
+.github
+**/node_modules
+**/dist
+**/.angular
+coverage
