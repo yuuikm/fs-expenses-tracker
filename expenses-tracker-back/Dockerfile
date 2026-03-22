@@ -1,6 +1,8 @@
 FROM node:20 AS deps
 
 WORKDIR /app
+ENV IS_DOCKER=true
+
 
 COPY package*.json ./
 RUN npm ci
