@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaClient } from 'prisma/generated/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PrismaService
@@ -15,12 +15,14 @@ export class PrismaService
 {
   private readonly logger = new Logger(PrismaService.name);
 
-  constructor() {
-    const pool = new Pool({
-      connectionString: process.env.POSTGRES_URI!,
+  constructor(private readonly configService: ConfigService) {
+    const adapter = new PrismaPg({
+      user: configService.getOrThrow<string>('POSTGRES_USER'),
+      password: configService.getOrThrow<string>('POSTGRES_PASSWORD'),
+      host: configService.getOrThrow<string>('POSTGRES_HOST'),
+      port: configService.getOrThrow<number>('POSTGRES_PORT'),
+      database: configService.getOrThrow<string>('POSTGRES_DATABASE'),
     });
-
-    const adapter = new PrismaPg(pool);
 
     super({ adapter });
   }
@@ -40,8 +42,11 @@ export class PrismaService
   async onModuleDestroy() {
     this.logger.log('Disconnected from database...');
 
-    await this.$disconnect();
-
-    this.logger.log('Database connection closed');
+    try {
+      await this.$disconnect();
+      this.logger.log('Database connection closed');
+    } catch (error) {
+      this.logger.log('Failed to disconnect from database: ', error);
+    }
   }
 }

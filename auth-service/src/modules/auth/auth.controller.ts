@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService } from '@/modules/auth/auth.service';
 import { GrpcMethod } from '@nestjs/microservices';
 
 import type {
@@ -13,8 +13,6 @@ export class AuthController {
 
   @GrpcMethod('AuthService', 'SendOtp')
   public async sendOtp(data: SendOtpRequest): Promise<SendOtpResponse> {
-    console.log(data);
-
-    return { ok: true };
+    return await this.authService.sendOtp(data);
   }
 }

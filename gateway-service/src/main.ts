@@ -36,4 +36,4 @@ async function bootstrap() {
   logger.log(`Gateway started on ${host}`);
   logger.log(`Swagger started on ${host}/docs`);
 }
-bootstrap();
+void bootstrap();
