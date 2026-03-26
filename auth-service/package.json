@@ -30,7 +30,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
-    "@yuuik/contracts": "^1.0.0",
+    "@yuuik/contracts": "^1.0.1",
     "ioredis": "^5.10.1",
     "prisma": "^7.5.0",
     "reflect-metadata": "^0.2.2",

@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import type { SendOtpRequest } from '@yuuik/contracts/gen/auth';
+import type {
+  SendOtpRequest,
+  VerifyOtpRequest,
+} from '@yuuik/contracts/gen/auth';
 import { AuthRepository } from '@/modules/auth/auth.repository';
 import { Account } from '../../../prisma/generated/client';
 import { OtpService } from '@/modules/otp/otp.service';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
@@ -35,5 +39,31 @@ export class AuthService {
     console.debug('CODE: ', code);
 
     return { ok: true };
+  }
+
+  public async verifyOtp(data: VerifyOtpRequest) {
+    const { identifier, code, type } = data;
+
+    await this.otpService.verify(identifier, code, type as 'phone' | 'email');
+
+    let account: Account | null;
+
+    if (type === 'phone')
+      account = await this.authRepository.findByPhone(identifier);
+    else account = await this.authRepository.findByEmail(identifier);
+
+    if (!account) throw new RpcException('Account not found');
+
+    if (type === 'phone' && !account.isPhoneVerified)
+      await this.authRepository.updateAccount(account.id, {
+        isPhoneVerified: true,
+      });
+
+    if (type === 'email' && !account.isEmailVerified)
+      await this.authRepository.updateAccount(account.id, {
+        isEmailVerified: true,
+      });
+
+    return { accessToken: '123456', refreshToken: '123456' };
   }
 }
