@@ -1,30 +1,26 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { PROTO_PATH } from '@yuuik/contracts';
+
 import { AuthController } from './auth.controller';
 import { AuthClientGrpc } from './auth.grpc';
-import { join } from 'node:path';
 
 @Module({
   imports: [
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'AUTH_PACKAGE',
-        transport: Transport.GRPC,
-        options: {
-          package: 'auth.v1',
-          protoPath: join(
-            process.cwd(),
-            'node_modules/@yuuik/contracts/proto/auth.proto',
-          ),
-          url: process.env.AUTH_GRPC_URL ?? 'localhost:50051',
-          loader: {
-            keepCase: false,
-            longs: String,
-            enums: String,
-            default: true,
-            oneofs: true,
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.GRPC,
+          options: {
+            package: 'auth.v1',
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            protoPath: String(PROTO_PATH.AUTH),
+            url: configService.getOrThrow<string>('AUTH_GRPC_URL'),
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

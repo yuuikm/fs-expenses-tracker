@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import Redis from 'ioredis';
 import { ConfigService } from '@nestjs/config';
-import type { AllConfig } from '@/config';
+import type { AllConfigs } from '@/config';
 
 @Injectable()
 export class RedisService
@@ -15,7 +15,9 @@ export class RedisService
 {
   private readonly logger = new Logger(RedisService.name);
 
-  public constructor(private readonly configService: ConfigService<AllConfig>) {
+  public constructor(
+    private readonly configService: ConfigService<AllConfigs>,
+  ) {
     super({
       username: configService.get('redis.user', { infer: true }),
       password: configService.get('redis.password', { infer: true }),
