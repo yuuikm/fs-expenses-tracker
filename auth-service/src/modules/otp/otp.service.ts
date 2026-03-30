@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { RedisService } from '@/infrastructure/redis/redis.service';
 import { createHash } from 'node:crypto';
 import { RpcException } from '@nestjs/microservices';
+import { RpcStatus } from '@yuuik/common';
 
 @Injectable()
 export class OtpService {
@@ -32,7 +33,7 @@ export class OtpService {
 
     if (storedHash !== incomingHash)
       throw new RpcException({
-        code: 5,
+        code: RpcStatus.NOT_FOUND,
         details: 'Invalid or expired code',
       });
 

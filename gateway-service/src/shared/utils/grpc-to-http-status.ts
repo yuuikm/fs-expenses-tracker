@@ -1,5 +1,6 @@
-import { RpcStatus } from '@/shared/enums';
 import { HttpStatus } from '@nestjs/common';
+
+import { RpcStatus } from '@yuuik/common';
 
 export const grpcToHttpStatus: Record<number, number> = {
   [RpcStatus.OK]: HttpStatus.OK,

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import Redis from 'ioredis';
 import { ConfigService } from '@nestjs/config';
+import type { AllConfig } from '@/config';
 
 @Injectable()
 export class RedisService
@@ -14,28 +15,12 @@ export class RedisService
 {
   private readonly logger = new Logger(RedisService.name);
 
-  public constructor(private readonly configService: ConfigService) {
-    const redisUrl = configService.get<string>('REDIS_URL');
-    const redisHost = configService.getOrThrow<string>('REDIS_HOST');
-    const redisPort = configService.get<number>('REDIS_PORT') ?? 6379;
-    const redisUser = configService.get<string>('REDIS_USER')?.trim();
-    const redisPassword = configService.get<string>('REDIS_PASSWORD')?.trim();
-    const normalizedRedisUser =
-      redisUser && redisUser !== 'root' ? redisUser : undefined;
-
-    if (redisUrl) {
-      super(redisUrl, {
-        maxRetriesPerRequest: 5,
-        enableOfflineQueue: true,
-      });
-      return;
-    }
-
+  public constructor(private readonly configService: ConfigService<AllConfig>) {
     super({
-      host: redisHost,
-      port: redisPort,
-      username: normalizedRedisUser,
-      password: redisPassword || undefined,
+      username: configService.get('redis.user', { infer: true }),
+      password: configService.get('redis.password', { infer: true }),
+      host: configService.get('redis.host', { infer: true }),
+      port: configService.get('redis.port', { infer: true }),
       maxRetriesPerRequest: 5,
       enableOfflineQueue: true,
     });

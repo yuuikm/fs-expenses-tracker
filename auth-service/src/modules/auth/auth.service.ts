@@ -7,6 +7,7 @@ import { AuthRepository } from '@/modules/auth/auth.repository';
 import { Account } from '../../../prisma/generated/client';
 import { OtpService } from '@/modules/otp/otp.service';
 import { RpcException } from '@nestjs/microservices';
+import { RpcStatus } from '@yuuik/common';
 
 @Injectable()
 export class AuthService {
@@ -54,7 +55,7 @@ export class AuthService {
 
     if (!account)
       throw new RpcException({
-        code: 5,
+        code: RpcStatus.NOT_FOUND,
         details: 'Account not found',
       });
 
