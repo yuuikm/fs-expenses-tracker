@@ -8,12 +8,14 @@ import { Account } from '../../../prisma/generated/client';
 import { OtpService } from '@/modules/otp/otp.service';
 import { RpcException } from '@nestjs/microservices';
 import { RpcStatus } from '@yuuik/common';
+import { PassportService } from '@yuuik/passport';
 
 @Injectable()
 export class AuthService {
   public constructor(
     private readonly authRepository: AuthRepository,
     private readonly otpService: OtpService,
+    private readonly passportService: PassportService,
   ) {}
 
   public async sendOtp(data: SendOtpRequest) {
@@ -69,6 +71,9 @@ export class AuthService {
         isEmailVerified: true,
       });
 
-    return { accessToken: '123456', refreshToken: '123456' };
+    return {
+      accessToken: this.passportService.generateToken(account.id, 900),
+      refreshToken: '123456',
+    };
   }
 }
