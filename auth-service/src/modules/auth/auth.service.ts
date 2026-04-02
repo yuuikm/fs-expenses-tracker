@@ -8,15 +8,28 @@ import { Account } from '../../../prisma/generated/client';
 import { OtpService } from '@/modules/otp/otp.service';
 import { RpcException } from '@nestjs/microservices';
 import { RpcStatus } from '@yuuik/common';
-import { PassportService } from '@yuuik/passport';
+import { PassportService, TokenPayload } from '@yuuik/passport';
+import { ConfigService } from '@nestjs/config';
+import type { AllConfigs } from '@/config';
 
 @Injectable()
 export class AuthService {
+  private readonly ACCESS_TOKEN_TTL: number;
+  private readonly REFRESH_TOKEN_TTL: number;
+
   public constructor(
+    private readonly configService: ConfigService<AllConfigs>,
     private readonly authRepository: AuthRepository,
     private readonly otpService: OtpService,
     private readonly passportService: PassportService,
-  ) {}
+  ) {
+    this.ACCESS_TOKEN_TTL = this.configService.get('passport.accessTtl', {
+      infer: true,
+    });
+    this.REFRESH_TOKEN_TTL = this.configService.get('passport.refreshTtl', {
+      infer: true,
+    });
+  }
 
   public async sendOtp(data: SendOtpRequest) {
     const { identifier, type } = data;
@@ -71,9 +84,22 @@ export class AuthService {
         isEmailVerified: true,
       });
 
-    return {
-      accessToken: this.passportService.generateToken(account.id, 900),
-      refreshToken: '123456',
-    };
+    return this.generateToken(account.id);
+  }
+
+  private generateToken(userId: string) {
+    const payload: TokenPayload = { sub: userId };
+
+    const accessToken = this.passportService.generateToken(
+      String(payload.sub),
+      this.ACCESS_TOKEN_TTL,
+    );
+
+    const refreshToken = this.passportService.generateToken(
+      String(payload.sub),
+      this.REFRESH_TOKEN_TTL,
+    );
+
+    return { accessToken, refreshToken };
   }
 }
