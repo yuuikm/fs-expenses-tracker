@@ -4,6 +4,7 @@ import type {
   AuthServiceClient,
   SendOtpRequest,
   VerifyOtpRequest,
+  RefreshRequest,
 } from '@yuuik/contracts/gen/auth';
 import type { ClientGrpc } from '@nestjs/microservices';
 
@@ -25,5 +26,9 @@ export class AuthClientGrpc implements OnModuleInit {
 
   public verifyOtp(request: VerifyOtpRequest) {
     return this.authService.verifyOtp(request);
+  }
+
+  public refresh(request: RefreshRequest) {
+    return this.authService.refresh(request);
   }
 }

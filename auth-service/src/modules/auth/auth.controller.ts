@@ -7,6 +7,8 @@ import type {
   SendOtpResponse,
   VerifyOtpRequest,
   VerifyOtpResponse,
+  RefreshRequest,
+  RefreshResponse,
 } from '@yuuik/contracts/gen/auth';
 
 @Controller()
@@ -21,5 +23,10 @@ export class AuthController {
   @GrpcMethod('AuthService', 'VerifyOtp')
   public async verifyOtp(data: VerifyOtpRequest): Promise<VerifyOtpResponse> {
     return await this.authService.verifyOtp(data);
+  }
+
+  @GrpcMethod('AuthService', 'Refresh')
+  public async refresh(data: RefreshRequest): Promise<RefreshResponse> {
+    return await this.authService.refresh(data);
   }
 }

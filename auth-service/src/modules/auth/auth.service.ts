@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type {
+  RefreshRequest,
   SendOtpRequest,
   VerifyOtpRequest,
 } from '@yuuik/contracts/gen/auth';
@@ -85,6 +86,21 @@ export class AuthService {
       });
 
     return this.generateToken(account.id);
+  }
+
+  public async refresh(data: RefreshRequest) {
+    const { refreshToken } = data;
+
+    const result = this.passportService.verifyToken(refreshToken);
+
+    if (!result.valid) {
+      throw new RpcException({
+        code: RpcStatus.UNAUTHENTICATED,
+        details: result.reason,
+      });
+    }
+
+    return this.generateToken(result.userId);
   }
 
   private generateToken(userId: string) {
