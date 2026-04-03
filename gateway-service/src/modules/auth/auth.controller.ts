@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -10,9 +11,10 @@ import {
 import { SendOtpRequest, VerifyOtpRequest } from './dto';
 import { AuthClientGrpc } from './auth.grpc';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import type { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { CurrentUser, Protected } from '@/shared/decorators';
 
 @Controller('auth')
 export class AuthController {
@@ -83,5 +85,30 @@ export class AuthController {
     });
 
     return { accessToken };
+  }
+
+  @ApiOperation({
+    summary: 'Logout',
+    description: 'Clears refresh token cookie and logout user',
+  })
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  public async logout(@Res({ passthrough: true }) res: Response) {
+    res.cookie('refreshToken', '', {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') !== 'development',
+      domain: this.configService.getOrThrow<string>('COOKIES_DOMAIN'),
+      sameSite: 'lax',
+      expires: new Date(0),
+    });
+
+    return { ok: true };
+  }
+
+  @ApiBearerAuth()
+  @Protected()
+  @Get('account')
+  public async getAcount(@CurrentUser() userId: string) {
+    return { id: userId };
   }
 }
